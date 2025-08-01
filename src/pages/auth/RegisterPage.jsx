@@ -147,7 +147,7 @@ const RegisterPage = () => {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center">
             <FiStar className="h-8 w-8 text-blue-600 mr-2" />
-            <span className="text-2xl font-bold text-gray-900">ReviewManager</span>
+            <span className="text-2xl font-bold text-gray-900">Level 4 You</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">Create your account</h2>
           <p className="mt-2 text-sm text-gray-600">

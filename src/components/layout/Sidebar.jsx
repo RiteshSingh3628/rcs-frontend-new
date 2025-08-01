@@ -76,7 +76,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-gray-800">ReviewManager</h1>
+            <h1 className="text-xl font-bold text-gray-800">Level 4 You</h1>
             <button
               onClick={() => setIsOpen(false)}
               className="lg:hidden text-gray-500 hover:text-gray-700"

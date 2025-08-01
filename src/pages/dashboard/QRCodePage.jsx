@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button';
 
 const QRCodePage = () => {
   const [qrSettings, setQrSettings] = useState({
-    url: 'https://reviewmanager.com/review/12345',
+    url: 'https://api.level-4u.com/review/12345',
     size: 256,
     errorCorrection: 'M',
     foregroundColor: '#000000',

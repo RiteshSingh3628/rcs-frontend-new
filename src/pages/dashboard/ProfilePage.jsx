@@ -52,6 +52,7 @@ const ProfilePage = () => {
       };
 
       const profile = await userAPI.getProfile();
+      console.log(profile)
       // console.log("upcoming profile data",profile)
       
       const mockBilling = {

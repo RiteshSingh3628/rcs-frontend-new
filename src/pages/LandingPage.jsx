@@ -88,7 +88,7 @@ const LandingPage = () => {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
               <FiStar className="h-8 w-8 text-blue-600 mr-2" />
-              <span className="text-2xl font-bold text-gray-900">ReviewManager</span>
+              <span className="text-2xl font-bold text-gray-900">Level 4 You</span>
             </div>
             <div className="flex space-x-4">
               <Button
@@ -259,7 +259,7 @@ const LandingPage = () => {
               Ready to Transform Your Reviews?
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of businesses already using ReviewManager to build 
+              Join thousands of businesses already using Level 4 You to build 
               trust and grow their online presence.
             </p>
             <Button
@@ -278,10 +278,10 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center">
             <FiStar className="h-6 w-6 text-blue-400 mr-2" />
-            <span className="text-lg font-semibold">ReviewManager</span>
+            <span className="text-lg font-semibold">Level 4 You</span>
           </div>
           <p className="text-center text-gray-400 mt-4">
-            © 2025 ReviewManager. All rights reserved.
+            © 2025 Level 4 You. All rights reserved.
           </p>
         </div>
       </footer>
