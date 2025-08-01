@@ -29,7 +29,7 @@ const Dashboard = () => {
     try {
       const reviewsResponse = await reviewsAPI.getUserReviews();
       const reviewsData = reviewsResponse.data.reviews || [];
-      console.log("the coming data for reviews",reviewsData)
+      // console.log("the coming data for reviews",reviewsData)
       
       setReviews(reviewsData);
       
@@ -191,7 +191,7 @@ const Dashboard = () => {
       formData.append('file', file);
 
       const response = await ordersAPI.uploadCSV(file);
-      console.log('Upload successful:', response.data);
+      // console.log('Upload successful:', response.data);
       
       // Refresh dashboard data after successful upload
       await fetchDashboardData();
