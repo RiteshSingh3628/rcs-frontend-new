@@ -68,21 +68,16 @@ export const authAPI = {
 
 // Orders endpoints
 export const ordersAPI = {
+
   uploadCSV: (file) => {
+    console.log("uploaded file",file)
     const formData = new FormData();
     formData.append('file', file);
-    
     // Don't set Content-Type header, let the browser set it automatically with the boundary
-    return api.post('/api/orders/upload-csv/', formData, {
+    return api.post('/api/orders/upload-csv/', formData,{
       headers: {
-        ...api.defaults.headers,
-        'Accept': 'application/json',
+        'Content-Type': undefined, // Let the browser set it (it will include proper boundaries)
       },
-      // Important for proper file upload
-      transformRequest: [(data, headers) => {
-        delete headers['Content-Type']; // Remove Content-Type to let browser set it
-        return data;
-      }],
     });
   },
 };

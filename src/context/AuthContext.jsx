@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { authAPI } from '../api/api';
+import { authAPI, userAPI } from '../api/api';
+import { useApp } from './AppContext';
 
 const AuthContext = createContext();
 
@@ -9,29 +10,39 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // const {userProfile} = useApp();
+
   // Auto-login if token is found
   useEffect(() => {
     const token = localStorage.getItem('access_token');
+    // console.log("we are here ")
     if (token) {
-      setUser({ token });
+      // setUser({ token });
+      userProfile()
       setIsAuthenticated(true);
     }
     setIsLoading(false);
-  }, []);
+  }, [isAuthenticated]);
+
+  
 
   const login = async (credentials) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await authAPI.login(credentials);
+      // console.log("login response",response.data);
       const { access, refresh } = response.data;
 
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
 
-      setUser({ token: access, ...credentials });
+      // setUser({ token: access, ...credentials });
       setIsAuthenticated(true);
       setIsLoading(false);
+
+      // getting user data
+      
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Login failed';
@@ -57,6 +68,14 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: errorMessage };
     }
   };
+
+
+  const userProfile = async()=>{
+
+    const res = await userAPI.getProfile();
+    // console.log(res.data);
+    setUser(res.data);
+}
 
   const logout = () => {
     localStorage.removeItem('access_token');

@@ -29,7 +29,7 @@ const Dashboard = () => {
     try {
       const reviewsResponse = await reviewsAPI.getUserReviews();
       const reviewsData = reviewsResponse.data.reviews || [];
-      // console.log("the coming data for reviews",reviewsData)
+      console.log("the coming data for reviews",reviewsData)
       
       setReviews(reviewsData);
       
@@ -106,50 +106,7 @@ const Dashboard = () => {
 
   const recentReviews = reviews.slice(0, 5);
 
-  // const reviewColumns = [
-  //   {
-  //     key: 'customer_name',
-  //     title: 'Customer',
-  //     render: (value) => value || 'Anonymous',
-  //   },
-  //   {
-  //     key: 'rating',
-  //     title: 'Rating',
-  //     render: (value) => (
-  //       <div className="flex items-center">
-  //         {[...Array(5)].map((_, i) => (
-  //           <FiStar
-  //             key={i}
-  //             className={`h-4 w-4 ${
-  //               i < (value || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-  //             }`}
-  //           />
-  //         ))}
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     key: 'recommend',
-  //     title: 'Recommends',
-  //     render: (value) => (
-  //       <span
-  //         className={`px-2 py-1 rounded-full text-xs font-medium ${
-  //           value === 'yes'
-  //             ? 'bg-green-100 text-green-800'
-  //             : 'bg-red-100 text-red-800'
-  //         }`}
-  //       >
-  //         {value === 'yes' ? 'Yes' : 'No'}
-  //       </span>
-  //     ),
-  //   },
-  //   {
-  //     key: 'created_at',
-  //     title: 'Date',
-  //     render: (value) => new Date(value).toLocaleDateString(),
-  //   },
-  // ];
-
+  
 
   const [dragActive, setDragActive] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -190,11 +147,12 @@ const Dashboard = () => {
       const formData = new FormData();
       formData.append('file', file);
 
+      console.log("uploading file formdata",formData)
+
       const response = await ordersAPI.uploadCSV(file);
-      // console.log('Upload successful:', response.data);
+      console.log("response for uploaded file",response);
       
-      // Refresh dashboard data after successful upload
-      await fetchDashboardData();
+      // await fetchDashboardData();
       
     } catch (error) {
       setUploadError(error.message || 'Error uploading file');
@@ -267,41 +225,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Recent Reviews */}
-      {/* <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <Card>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Reviews</h2>
-            <a
-              href="/reviews"
-              className="text-blue-600 hover:text-blue-500 text-sm font-medium"
-            >
-              View all
-            </a>
-          </div>
-          
-          {loading.reviews ? (
-            <LoadingSpinner />
-          ) : recentReviews.length > 0 ? (
-            <Table
-              columns={reviewColumns}
-              data={recentReviews}
-            />
-          ) : (
-            <div className="text-center py-12">
-              <FiMessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
-              <p className="text-gray-500">
-                Start collecting reviews by setting up your widget.
-              </p>
-            </div>
-          )}
-        </Card>
-      </motion.div> */}
+    
        <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

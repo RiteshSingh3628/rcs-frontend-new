@@ -38,6 +38,7 @@ const Modal = ({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()} 
               className={`
                 inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left 
                 overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle 

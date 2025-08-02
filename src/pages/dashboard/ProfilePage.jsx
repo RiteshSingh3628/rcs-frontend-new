@@ -19,6 +19,8 @@ const ProfilePage = () => {
     email: '',
     phone: '',
   });
+
+
   const [upgradeModal, setUpgradeModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -32,28 +34,30 @@ const ProfilePage = () => {
   }, []);
 
   useEffect(() => {
-    setProfileForm(profile);
+
+    // setProfileForm(profile);
+    if(profile){
+      setProfileForm({
+        name: `${profile.first_name} ${profile.last_name}`,
+        businessName: profile.business_name || '',
+        url: profile.website_url || '',
+        email: profile.email || '',
+        phone: profile.contact_number || '',
+      });
+
+      // console.log(profileForm)
+    }
   }, [profile]);
 
   const fetchProfileData = async () => {
     setLoading('profile', true);
     setLoading('billing', true);
 
-
-    
     try {
-      // Mock data since we don't have actual profile endpoints
-      const mockProfile = {
-        name: 'John Doe',
-        businessName: 'Acme Corporation',
-        url: 'https://acme.com',
-        email: 'john@acme.com',
-        phone: '+1 (555) 123-4567',
-      };
 
-      const profile = await userAPI.getProfile();
-      console.log(profile)
-      // console.log("upcoming profile data",profile)
+      const res = await userAPI.getProfile();
+      setProfile(res.data)
+      // console.log("profile data",res.data)
       
       const mockBilling = {
         currentPlan: 'Professional',
@@ -65,8 +69,6 @@ const ProfilePage = () => {
           { id: 3, date: '2024-11-15', amount: '$29.00', status: 'Paid', plan: 'Starter' },
         ],
       };
-      
-      setProfile(mockProfile);
       setBilling(mockBilling);
     } catch (error) {
       console.error('Error fetching profile data:', error);
@@ -80,10 +82,12 @@ const ProfilePage = () => {
     e.preventDefault();
     setSaving(true);
     
+    
     try {
       // Mock API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       setProfile(profileForm);
+      // console.log(profileForm)
       // Show success message
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -97,10 +101,15 @@ const ProfilePage = () => {
     setProfileForm(prev => ({ ...prev, [name]: value }));
   };
 
+  
+  
+  
+
   const renderProfileTab = () => (
     <Card>
       <form onSubmit={handleProfileSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
           <Input
             label="Full Name"
             name="name"
@@ -146,7 +155,7 @@ const ProfilePage = () => {
           />
         </div>
 
-        <div className="flex justify-end">
+        {/* <div className="flex justify-end">
           <Button
             type="submit"
             loading={saving}
@@ -155,7 +164,7 @@ const ProfilePage = () => {
             <FiSave className="h-4 w-4 mr-2" />
             Save Changes
           </Button>
-        </div>
+        </div> */}
       </form>
     </Card>
   );

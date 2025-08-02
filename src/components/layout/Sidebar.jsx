@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className={`fixed inset-0 bg-gray-600 bg-opacity-50 z-20 lg:hidden ${isOpen? "hidden" : ''}`}
+          className={`fixed inset-0 bg-gray-600 bg-opacity-50 z-20  lg:hidden ${isOpen? "hidden" : ''}`}
           onClick={() => setIsOpen(false)}
         
         />
@@ -126,8 +126,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
       {/* Mobile menu button - only shown on mobile */}
       <button
-        onClick={() => setIsOpen(true)}
-        className="fixed lg:hidden top-4 left-4 z-40 bg-white p-2 rounded-md shadow-md"
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed lg:hidden top-4 right-4 z-40 bg-white p-2 rounded-md shadow-md"
       >
         <FiMenu size={24} />
       </button>

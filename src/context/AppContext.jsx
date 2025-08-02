@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import {reviewsAPI} from '../api/api'
+import {reviewsAPI,userAPI} from '../api/api'
+import {useAuth} from '../context/AuthContext'
 const AppContext = createContext();
 
 const initialState = {
@@ -38,6 +39,14 @@ export const AppProvider = ({ children }) => {
   const [loading, setLoadingState] = useState(initialState.loading);
   const [errors, setErrors] = useState(initialState.errors);
 
+  const {isAuthenticated} = useAuth()
+
+  // useEffect(()=>{
+  //   if(isAuthenticated){
+  //     userProfile()
+  //   }
+  // },[isAuthenticated])
+
   const setLoading = (key, value) => {
     setLoadingState((prev) => ({ ...prev, [key]: value }));
   };
@@ -59,6 +68,13 @@ export const AppProvider = ({ children }) => {
       prev.map((review) => (review.id === updatedReview.id ? updatedReview : review))
     );
   };
+
+  // const userProfile = async()=>{
+  //     const res = await userAPI.getProfile();
+  //     console.log(res.data);
+  // }
+
+
 
   const value = {
     reviews,

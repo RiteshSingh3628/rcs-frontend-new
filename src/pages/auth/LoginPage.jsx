@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card from '../../components/ui/Card';
+// import { useApp } from '../../context/AppContext';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +21,8 @@ const LoginPage = () => {
   const location = useLocation();
   
   const from = location.state?.from?.pathname || '/dashboard';
+
+  
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -56,6 +59,9 @@ const LoginPage = () => {
     
     const result = await login(formData);
     if (result.success) {
+
+      
+
       navigate(from, { replace: true });
     }
   };

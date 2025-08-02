@@ -4,6 +4,7 @@ import { FiSettings, FiCode, FiEye, FiCopy, FiCheck } from 'react-icons/fi';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import { useAuth } from '../../context/AuthContext';
 
 const WidgetSettingsPage = () => {
   const [settings, setSettings] = useState({
@@ -17,13 +18,16 @@ const WidgetSettingsPage = () => {
     requireComment: false,
   });
   
+  const {user} = useAuth();
+  // console.log("user:",user)
+  
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState('settings');
+  const [activeTab, setActiveTab] = useState('code');
 
   const tabs = [
-    { id: 'settings', label: 'Widget Settings', icon: FiSettings },
+    // { id: 'settings', label: 'Widget Settings', icon: FiSettings },
     { id: 'code', label: 'Embed Code', icon: FiCode },
-    { id: 'preview', label: 'Preview', icon: FiEye },
+    // { id: 'preview', label: 'Preview', icon: FiEye },
   ];
 
   const handleSettingChange = (key, value) => {
@@ -33,7 +37,7 @@ const WidgetSettingsPage = () => {
   const generateEmbedCode = () => {
     const userId = '12345'; // This would come from user context
     return `<iframe 
-  src="${window.location.origin}/widget/${userId}" 
+  src="http://api.level-4u.com/api/reviews/widget/iframe/${user?.id}" 
   width="100%" 
   height="600" 
   frameborder="0"

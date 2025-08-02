@@ -1,20 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  FiSearch,
-  FiFilter,
-  FiStar,
-  FiMessageCircle,
-  FiCalendar,
-} from "react-icons/fi";
+import { FiSearch, FiStar } from "react-icons/fi";
 import { useApp } from "../../context/AppContext";
 import { reviewsAPI } from "../../api/api";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
-// import Table from "../../components/ui/Table";
-import Modal from "../../components/ui/Modal";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+
+// Reusable Modal Component
+const CustomModal = ({ isOpen, onClose, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
+        <button
+          className="absolute top-2 right-4 font-extrabold text-red-500 bg-gray-100 hover:bg-gray-200 p-1 hover:text-red-800"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+        <div className="max-h-[80%] p-2 md:p-4 overflow-y-scroll">
+        {children}
+
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ReviewsPage = () => {
   const { reviews, loading, setReviews, setLoading, updateReview } = useApp();
@@ -26,22 +40,18 @@ const ReviewsPage = () => {
     dateTo: "",
   });
   const [selectedReview, setSelectedReview] = useState(null);
-  const [replyModal, setReplyModal] = useState(false);
   const [replyText, setReplyText] = useState("");
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showReplyModal, setShowReplyModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 10;
 
   useEffect(() => {
-    // fetchReviews();
-    if (reviews.length <= 0) {
-      fetchReviews();
-    }
+    if (reviews.length <= 0) fetchReviews();
   }, []);
 
   useEffect(() => {
-    if (reviews.length > 0) {
-      applyFilters();
-    }
+    if (reviews.length > 0) applyFilters();
   }, [reviews, filters]);
 
   const fetchReviews = async () => {
@@ -58,8 +68,6 @@ const ReviewsPage = () => {
 
   const applyFilters = () => {
     let filtered = [...reviews];
-
-    // Search filter
     if (filters.search) {
       filtered = filtered.filter(
         (review) =>
@@ -69,27 +77,21 @@ const ReviewsPage = () => {
           review.comment?.toLowerCase().includes(filters.search.toLowerCase())
       );
     }
-
-    // Status filter
     if (filters.status !== "all") {
       filtered = filtered.filter(
         (review) => review.recommend === filters.status
       );
     }
-
-    // Date filters
     if (filters.dateFrom) {
       filtered = filtered.filter(
         (review) => new Date(review.created_at) >= new Date(filters.dateFrom)
       );
     }
-
     if (filters.dateTo) {
       filtered = filtered.filter(
         (review) => new Date(review.created_at) <= new Date(filters.dateTo)
       );
     }
-
     setFilteredReviews(filtered);
     setCurrentPage(1);
   };
@@ -100,14 +102,14 @@ const ReviewsPage = () => {
 
   const handleReplySubmit = async () => {
     if (!selectedReview || !replyText.trim()) return;
-
+    console.log(selectedReview);
     try {
       const response = await reviewsAPI.replyToNegativeReview(
         selectedReview.id,
         replyText
       );
       updateReview(response.data);
-      setReplyModal(false);
+      setShowReplyModal(false);
       setReplyText("");
       setSelectedReview(null);
     } catch (error) {
@@ -115,96 +117,18 @@ const ReviewsPage = () => {
     }
   };
 
-  // const reviewColumns = [
-  //   {
-  //     key: "customer_name",
-  //     title: "Customer",
-  //     render: (value) => value || "Anonymous",
-  //   },
-  //   {
-  //     key: "rating",
-  //     title: "Rating",
-  //     render: (value, row) => (
-  //       <div className="flex items-center">
-  //         {[...Array(5)].map((_, i) => (
-  //           <FiStar
-  //             key={i}
-  //             className={`h-4 w-4 ${
-  //               i < (value || 0)
-  //                 ? "text-yellow-400 fill-current"
-  //                 : "text-gray-300"
-  //             }`}
-  //           />
-  //         ))}
-  //         <span className="ml-2 text-sm text-gray-600">
-  //           (
-  //           {row.logistics_rating +
-  //             row.communication_rating +
-  //             row.website_usability_rating}
-  //           /15)
-  //         </span>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     key: "recommend",
-  //     title: "Recommends",
-  //     render: (value) => (
-  //       <span
-  //         className={`px-2 py-1 rounded-full text-xs font-medium ${
-  //           value === "yes"
-  //             ? "bg-green-100 text-green-800"
-  //             : "bg-red-100 text-red-800"
-  //         }`}
-  //       >
-  //         {value === "yes" ? "Yes" : "No"}
-  //       </span>
-  //     ),
-  //   },
-  //   {
-  //     key: "comment",
-  //     title: "Comment",
-  //     render: (value) => (
-  //       <div className="max-w-xs truncate" title={value}>
-  //         {value || "No comment"}
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     key: "created_at",
-  //     title: "Date",
-  //     render: (value) => new Date(value).toLocaleDateString(),
-  //   },
-  //   {
-  //     key: "actions",
-  //     title: "Actions",
-  //     render: (_, row) => (
-  //       <div className="flex space-x-2">
-  //         <Button
-  //           size="sm"
-  //           variant="outline"
-  //           onClick={() => setSelectedReview(row)}
-  //         >
-  //           View
-  //         </Button>
-  //         {row.recommend === "no" && !row.reply && (
-  //           <Button
-  //             size="sm"
-  //             onClick={() => {
-  //               setSelectedReview(row);
-  //               setReplyModal(true);
-  //             }}
-  //           >
-  //             Reply
-  //           </Button>
-  //         )}
-  //       </div>
-  //     ),
-  //   },
-  // ];
+  const calculateOverallRating = (review) => {
+    const ratings = [
+      review.main_rating,
+      review.logistics_rating,
+      review.communication_rating,
+      review.website_usability_rating,
+    ].filter((r) => r !== undefined);
+    return ratings.length > 0
+      ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+      : 0;
+  };
 
-  // console.log("filtered reviews = ",reviews)
-  // Pagination
   const indexOfLastReview = currentPage * reviewsPerPage;
   const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
   const currentReviews = filteredReviews.slice(
@@ -220,19 +144,6 @@ const ReviewsPage = () => {
       </div>
     );
   }
-
-  const calculateOverallRating = (review) => {
-    const ratings = [
-      review.main_rating,
-      review.logistics_rating,
-      review.communication_rating,
-      review.website_usability_rating,
-    ].filter((rating) => rating !== undefined);
-
-    return ratings.length > 0
-      ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
-      : 0;
-  };
 
   return (
     <div className="space-y-6">
@@ -255,27 +166,22 @@ const ReviewsPage = () => {
               className="pl-10"
             />
           </div>
-
           <select
             value={filters.status}
             onChange={(e) => handleFilterChange("status", e.target.value)}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
           >
             <option value="all">All Reviews</option>
             <option value="yes">Positive</option>
             <option value="no">Negative</option>
           </select>
-
           <Input
             type="date"
-            placeholder="From date"
             value={filters.dateFrom}
             onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
           />
-
           <Input
             type="date"
-            placeholder="To date"
             value={filters.dateTo}
             onChange={(e) => handleFilterChange("dateTo", e.target.value)}
           />
@@ -284,65 +190,41 @@ const ReviewsPage = () => {
 
       {/* Reviews Table */}
       <Card className="overflow-x-scroll">
-        {/* <Table
-          columns={reviewColumns}
-          data={currentReviews}
-          loading={loading.reviews}
-        /> */}
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Order Id
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Overall Rating
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Rating
               </th>
-              <th className="px-6 py-3 max-w-sm text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Comment
               </th>
-
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Recommends
               </th>
-
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {currentReviews.map((review, index) => {
               const overallRating = calculateOverallRating(review);
-
               return (
                 <motion.tr
                   key={review.order_id || index}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="hover:bg-gray-50"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <button
-                      // onClick={(e) => {
-                      //   e.preventDefault();
-                      //   e.stopPropagation();
-                      //   e.nativeEvent.stopImmediatePropagation(); // Add this line
-                      //   console.log(
-                      //     "Setting selected review:",
-                      //     review.order_id
-                      //   ); // Debug log
-                      //   setSelectedReview(review);
-                      //   setReplyModal(false);
-                      // }}
-                      className="text-blue-600 hover:text-blue-800 hover:underline"
-                      type="button"
-                    >
-                      {review.order_id || "Anonymous"}
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm">{review.order_id}</td>
+                  <td className="px-6 py-4 text-sm">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
                         <FiStar
@@ -359,10 +241,10 @@ const ReviewsPage = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm max-w-sm truncate">
                     {review.comment}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         review.recommend === "yes"
@@ -373,8 +255,35 @@ const ReviewsPage = () => {
                       {review.recommend === "yes" ? "Yes" : "No"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm">
                     {new Date(review.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedReview(review);
+                          setShowViewModal(true);
+                        }}
+                      >
+                        View
+                      </Button>
+                      
+                      {((review.recommend === "no" && !review.reply) || (review.main_rating < 3 && !review.reply)) && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedReview(review);
+                          setShowReplyModal(true);
+                        }}
+                      >
+                        Respond
+                      </Button>
+                        
+                      )}
+                    </div>
                   </td>
                 </motion.tr>
               );
@@ -384,11 +293,11 @@ const ReviewsPage = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
-            <div className="text-sm text-gray-700">
+          <div className="flex justify-between items-center mt-6 pt-4 border-t">
+            <div className="text-sm text-gray-600">
               Showing {indexOfFirstReview + 1} to{" "}
               {Math.min(indexOfLastReview, filteredReviews.length)} of{" "}
-              {filteredReviews.length} results
+              {filteredReviews.length}
             </div>
             <div className="flex space-x-2">
               <Button
@@ -397,11 +306,11 @@ const ReviewsPage = () => {
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(currentPage - 1)}
               >
-                Previous
+                Prev
               </Button>
               {[...Array(totalPages)].map((_, i) => (
                 <Button
-                  key={i + 1}
+                  key={i}
                   variant={currentPage === i + 1 ? "primary" : "outline"}
                   size="sm"
                   onClick={() => setCurrentPage(i + 1)}
@@ -422,15 +331,13 @@ const ReviewsPage = () => {
         )}
       </Card>
 
-      {/* Review Detail Modal */}
-      <Modal
-        isOpen={!!selectedReview && !replyModal}
+      {/* View Modal */}
+      <CustomModal
+        isOpen={showViewModal}
         onClose={() => {
-          setSelectedReview(false);
-          setReplyModal(false);
+          setShowViewModal(false);
+          setSelectedReview(null);
         }}
-        title="Review Details"
-        size="lg"
       >
         {selectedReview && (
           <div className="space-y-6">
@@ -543,7 +450,7 @@ const ReviewsPage = () => {
             )}
 
             {/* Reply */}
-            {selectedReview.reply ? (
+            {selectedReview.reply && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Your Reply
@@ -552,17 +459,6 @@ const ReviewsPage = () => {
                   {selectedReview.reply}
                 </div>
               </div>
-            ) : (
-              selectedReview.recommend === "no" && (
-                <Button
-                  onClick={() => {
-                    setReplyModal(true);
-                  }}
-                  className="w-full"
-                >
-                  Reply to Review
-                </Button>
-              )
             )}
 
             {/* Published Status */}
@@ -580,16 +476,15 @@ const ReviewsPage = () => {
             </div>
           </div>
         )}
-      </Modal>
+      </CustomModal>
 
       {/* Reply Modal */}
-      <Modal
-        isOpen={replyModal}
+      <CustomModal
+        isOpen={showReplyModal}
         onClose={() => {
-          setReplyModal(false);
+          setShowReplyModal(false);
           setReplyText("");
         }}
-        title="Reply to Review"
       >
         <div className="space-y-4">
           <div>
@@ -608,7 +503,6 @@ const ReviewsPage = () => {
             <Button
               variant="outline"
               onClick={() => {
-                setReplyModal(false);
                 setReplyText("");
               }}
             >
@@ -619,7 +513,7 @@ const ReviewsPage = () => {
             </Button>
           </div>
         </div>
-      </Modal>
+      </CustomModal>
     </div>
   );
 };
