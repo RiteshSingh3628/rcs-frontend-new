@@ -188,12 +188,14 @@ const WidgetSettingsPage = () => {
     </Card>
   );
 
+  const url = `http://api.level-4u.com/api/reviews/widget/iframe/${user?.id}`
+
   const renderPreview = () => (
     <Card>
       <h3 className="text-lg font-semibold text-gray-900 mb-6">Widget Preview</h3>
       
       <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+        {/* <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
           <div className="text-center mb-6">
             {settings.showLogo && (
               <div className="w-12 h-12 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -273,6 +275,9 @@ const WidgetSettingsPage = () => {
               {settings.buttonText}
             </button>
           </div>
+        </div> */}
+        <div>
+          <iframe src={url} frameborder="0"></iframe>
         </div>
       </div>
     </Card>

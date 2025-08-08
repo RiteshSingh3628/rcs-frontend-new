@@ -24,7 +24,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: FiSettings, label: "Widget Settings", path: "/widget-settings" },
     { icon: FiStar, label: "Reviews", path: "/reviews" },
     { icon: FiBarChart2, label: "Statistics", path: "/statistics" },
-    { icon: FiArchive, label: "Archive", path: "/archive" },
+    // { icon: FiArchive, label: "Archive", path: "/archive" },
     { icon: FiUser, label: "Profile", path: "/profile" },
     { icon: FaSquare, label: "QR Code", path: "/qr-code" },
   ];

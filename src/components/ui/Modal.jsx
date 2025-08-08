@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX } from 'react-icons/fi';
+import { h3 } from 'framer-motion/client';
 
 const Modal = ({
   isOpen,
@@ -49,15 +50,16 @@ const Modal = ({
                 {title && (
                   <h3 className="text-lg font-medium text-gray-900">{title}</h3>
                 )}
-                <button
+                {/* <button
                   onClick={onClose}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <FiX size={24} />
-                </button>
+                </button> */}
               </div>
               {children}
             </motion.div>
+            
           </div>
         </div>
       )}
