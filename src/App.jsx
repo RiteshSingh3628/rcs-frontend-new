@@ -16,6 +16,7 @@ import ProfilePage from './pages/dashboard/ProfilePage';
 import WidgetSettingsPage from './pages/dashboard/WidgetSettingsPage';
 import QRCodePage from './pages/dashboard/QRCodePage';
 import ArchivePage from './pages/dashboard/ArchivePage';
+import UpgradePlanPage from './pages/dashboard/UpgradePlanPage'
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
                 <Route path="widget-settings" element={<WidgetSettingsPage />} />
                 <Route path="qr-code" element={<QRCodePage />} />
                 <Route path="archive" element={<ArchivePage />} />
+                <Route path="upgrade-plan" element={<UpgradePlanPage />} />
               </Route>
               
               {/* Redirect old routes */}
@@ -54,6 +56,7 @@ function App() {
               <Route path="/widget-settings" element={<Navigate to="/dashboard/widget-settings" replace />} />
               <Route path="/qr-code" element={<Navigate to="/dashboard/qr-code" replace />} />
               <Route path="/archive" element={<Navigate to="/dashboard/archive" replace />} />
+              <Route path="/upgrade-plan" element={<Navigate to="/dashboard/upgrade-plan" replace />} />
               
               {/* Catch all route */}
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import UpgradePopup from '../ui/UpgradePopup';
+import { useApp } from '../../context/AppContext';
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const { showUpgradePopup, closeUpgradePopup, paymentInfo } = useApp();
 
   // Automatically handle sidebar state based on screen size
   useEffect(() => {
@@ -38,6 +41,13 @@ const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Upgrade Popup */}
+      <UpgradePopup
+        isOpen={showUpgradePopup}
+        onClose={closeUpgradePopup}
+        paymentInfo={paymentInfo}
+      />
     </div>
   );
 };

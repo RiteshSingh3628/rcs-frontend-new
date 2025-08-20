@@ -97,6 +97,14 @@ export const userAPI = {
   getProfile: () => api.get('/api/users/profile/'),
   updateProfile: (profileData) => api.put('/api/users/profile/', profileData),
   getBilling: () => api.get('/api/users/billing/'),
+  paymentInfo:()=> api.get(`/api/users/user-plan-info/`),
 };
+
+export const paymentAPI = {
+  createPayment:null,
+  upgradePlan: (plan) => api.post(`/api/payment/upgrade/`, { plan: plan }),
+  getPaymentHistory:null,
+  rePurchase:()=> api.post(`/api/payment/repurchase/`)
+}
 
 export default api;

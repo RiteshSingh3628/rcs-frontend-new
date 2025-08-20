@@ -22,13 +22,25 @@ const initialState = {
     paymentHistory: [],
     timeRemaining: '',
   },
+  paymentInfo: {
+    plan: '',
+    monthly_count: 0,
+    limit: 0,
+    remaining: 0,
+    limit_reached: false,
+    plan_expired: false,
+    trial: false,
+    message: '',
+  },
   loading: {
     reviews: false,
     statistics: false,
     profile: false,
     billing: false,
+    paymentInfo: false,
   },
   errors: {},
+  showUpgradePopup: false,
 };
 
 export const AppProvider = ({ children }) => {
@@ -36,16 +48,41 @@ export const AppProvider = ({ children }) => {
   const [statistics, setStatistics] = useState(initialState.statistics);
   const [profile, setProfile] = useState(initialState.profile);
   const [billing, setBilling] = useState(initialState.billing);
+  const [paymentInfo, setPaymentInfo] = useState(initialState.paymentInfo);
   const [loading, setLoadingState] = useState(initialState.loading);
   const [errors, setErrors] = useState(initialState.errors);
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
 
   const {isAuthenticated} = useAuth()
 
-  // useEffect(()=>{
-  //   if(isAuthenticated){
-  //     userProfile()
-  //   }
-  // },[isAuthenticated])
+  // Fetch payment info when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchPaymentInfo();
+    }
+  }, [isAuthenticated]);
+
+  // Check if trial is finished and show upgrade popup
+  useEffect(() => {
+    if (paymentInfo.plan_expired && !paymentInfo.trial) {
+      setShowUpgradePopup(true);
+    }
+  }, [paymentInfo]);
+
+  const fetchPaymentInfo = async () => {
+    setLoading('paymentInfo', true);
+    try {
+      const response = await userAPI.paymentInfo();
+      setPaymentInfo(response.data);
+
+      console.log("paymentInfo",response.data);
+    } catch (error) {
+      console.error('Error fetching payment info:', error);
+      setError('paymentInfo', 'Failed to fetch payment information');
+    } finally {
+      setLoading('paymentInfo', false);
+    }
+  };
 
   const setLoading = (key, value) => {
     setLoadingState((prev) => ({ ...prev, [key]: value }));
@@ -69,30 +106,31 @@ export const AppProvider = ({ children }) => {
     );
   };
 
-  // const userProfile = async()=>{
-  //     const res = await userAPI.getProfile();
-  //     console.log(res.data);
-  // }
-
-
+  const closeUpgradePopup = () => {
+    setShowUpgradePopup(false);
+  };
 
   const value = {
     reviews,
     statistics,
     profile,
     billing,
+    paymentInfo,
     loading,
     errors,
+    showUpgradePopup,
     setReviews,
     setStatistics,
     setProfile,
     setBilling,
+    setPaymentInfo,
     setLoading,
     setError,
     clearError,
     addReview,
     updateReview,
-    
+    fetchPaymentInfo,
+    closeUpgradePopup,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

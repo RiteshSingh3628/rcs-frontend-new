@@ -8,9 +8,10 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import {useNavigate} from 'react-router-dom'
 
 const ProfilePage = () => {
-  const { profile, billing, loading, setProfile, setBilling, setLoading } = useApp();
+  const { profile, billing, paymentInfo, loading, setProfile, setBilling, setLoading } = useApp();
   const [activeTab, setActiveTab] = useState('profile');
   const [profileForm, setProfileForm] = useState({
     name: '',
@@ -24,6 +25,8 @@ const ProfilePage = () => {
   const [upgradeModal, setUpgradeModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const navigate = useNavigate();
+
   const tabs = [
     { id: 'profile', label: 'Profile Details', icon: FiUser },
     { id: 'billing', label: 'Billing', icon: FiCreditCard },
@@ -32,6 +35,14 @@ const ProfilePage = () => {
   useEffect(() => {
     fetchProfileData();
   }, []);
+
+  // Fetch payment info when component mounts
+  useEffect(() => {
+    if (profile) {
+      // Payment info is already fetched in AppContext when user is authenticated
+      // This ensures it's available when the profile page loads
+    }
+  }, [profile]);
 
   useEffect(() => {
 
@@ -59,17 +70,16 @@ const ProfilePage = () => {
       setProfile(res.data)
       // console.log("profile data",res.data)
       
-      const mockBilling = {
-        currentPlan: 'Professional',
-        nextBilling: '2025-02-15',
-        timeRemaining: '23 days',
+      // Use real payment info for billing display
+      const billingData = {
+        currentPlan: paymentInfo.plan || 'Trial',
+        nextBilling: paymentInfo.trial ? 'Trial Period' : 'Monthly',
+        timeRemaining: paymentInfo.trial ? 'Active' : paymentInfo.plan_expired ? 'Expired' : 'Active',
         paymentHistory: [
-          { id: 1, date: '2025-01-15', amount: '$79.00', status: 'Paid', plan: 'Professional' },
-          { id: 2, date: '2024-12-15', amount: '$79.00', status: 'Paid', plan: 'Professional' },
-          { id: 3, date: '2024-11-15', amount: '$29.00', status: 'Paid', plan: 'Starter' },
+          // You can add real payment history here when available
         ],
       };
-      setBilling(mockBilling);
+      setBilling(billingData);
     } catch (error) {
       console.error('Error fetching profile data:', error);
     } finally {
@@ -175,30 +185,60 @@ const ProfilePage = () => {
       <Card>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900">Current Plan</h3>
-          <Button
-            onClick={() => setUpgradeModal(true)}
-            className="flex items-center"
-          >
-            <FiPlus className="h-4 w-4 mr-2" />
-            Upgrade Plan
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={fetchProfileData}
+              variant="outline"
+              size="sm"
+              loading={loading.billing}
+              disabled={loading.billing}
+            >
+              Refresh
+            </Button>
+            <Button
+              onClick={() => navigate('/upgrade-plan')}
+              className="flex items-center"
+            >
+              <FiPlus className="h-4 w-4 mr-2" />
+              Upgrade Plan
+            </Button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-4 bg-blue-50 rounded-lg">
             <h4 className="font-semibold text-blue-900 mb-2">Plan</h4>
-            <p className="text-2xl font-bold text-blue-600">{billing.currentPlan}</p>
+            <p className="text-2xl font-bold text-blue-600 capitalize">{paymentInfo.plan || 'Trial'}</p>
           </div>
           
           <div className="text-center p-4 bg-green-50 rounded-lg">
-            <h4 className="font-semibold text-green-900 mb-2">Next Billing</h4>
-            <p className="text-lg font-medium text-green-600">{billing.nextBilling}</p>
+            <h4 className="font-semibold text-green-900 mb-2">Reviews Used</h4>
+            <p className="text-lg font-medium text-green-600">{paymentInfo.monthly_count}/{paymentInfo.limit}</p>
           </div>
           
           <div className="text-center p-4 bg-orange-50 rounded-lg">
-            <h4 className="font-semibold text-orange-900 mb-2">Time Remaining</h4>
-            <p className="text-lg font-medium text-orange-600">{billing.timeRemaining}</p>
+            <h4 className="font-semibold text-orange-900 mb-2">Remaining</h4>
+            <p className="text-lg font-medium text-orange-600">{paymentInfo.remaining}</p>
           </div>
+        </div>
+
+        {/* Status Indicator */}
+        <div className="mt-4 text-center">
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+            paymentInfo.trial 
+              ? 'bg-yellow-100 text-yellow-800' 
+              : paymentInfo.plan_expired 
+                ? 'bg-red-100 text-red-800'
+                : 'bg-green-100 text-green-800'
+          }`}>
+            {paymentInfo.trial 
+              ? 'Trial Active' 
+              : paymentInfo.plan_expired 
+                ? 'Plan Expired'
+                : 'Plan Active'
+            }
+          </div>
+          <p className="text-sm text-gray-600 mt-2">{paymentInfo.message}</p>
         </div>
       </Card>
 
@@ -250,7 +290,7 @@ const ProfilePage = () => {
     </div>
   );
 
-  if (loading.profile || loading.billing) {
+  if (loading.profile || loading.billing || loading.paymentInfo) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
@@ -295,64 +335,7 @@ const ProfilePage = () => {
       </motion.div>
 
       {/* Upgrade Modal */}
-      <Modal
-        isOpen={upgradeModal}
-        onClose={() => setUpgradeModal(false)}
-        title="Upgrade Your Plan"
-        size="lg"
-      >
-        <div className="space-y-6">
-          <p className="text-gray-600">
-            Choose a plan that fits your business needs and unlock more features.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                name: 'Professional',
-                price: '$79',
-                features: ['Up to 500 reviews/month', 'Advanced analytics', 'Priority support', 'Custom branding'],
-                current: billing.currentPlan === 'Professional',
-              },
-              {
-                name: 'Enterprise',
-                price: '$199',
-                features: ['Unlimited reviews', 'Full analytics suite', '24/7 phone support', 'White-label solution'],
-                current: false,
-              },
-            ].map((plan) => (
-              <div
-                key={plan.name}
-                className={`p-6 border rounded-lg ${
-                  plan.current ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                }`}
-              >
-                <div className="text-center mb-4">
-                  <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                  <p className="text-3xl font-bold text-blue-600">{plan.price}<span className="text-sm text-gray-600">/month</span></p>
-                </div>
-                
-                <ul className="space-y-2 mb-6">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center text-sm text-gray-600">
-                      <FiUser className="h-4 w-4 text-green-500 mr-2" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                
-                <Button
-                  className="w-full"
-                  variant={plan.current ? 'outline' : 'primary'}
-                  disabled={plan.current}
-                >
-                  {plan.current ? 'Current Plan' : 'Upgrade'}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Modal>
+      
     </div>
   );
 };
