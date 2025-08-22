@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FiTrendingUp, FiStar, FiUsers, FiCalendar } from "react-icons/fi";
+import { FiTrendingUp, FiStar, FiUsers, FiCalendar, FiArrowRight } from "react-icons/fi";
 import { useApp } from "../../context/AppContext";
 import Card from "../../components/ui/Card";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import Button from "../../components/ui/Button";
+import { useNavigate } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -24,9 +26,10 @@ import { FaStar, FaChartBar, FaChartPie, FaChartLine } from "react-icons/fa";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 const StatisticsPage = () => {
-  const { reviews, loading, statistics } = useApp();
+  const { reviews, loading, statistics, paymentInfo } = useApp();
   const [activeTab, setActiveTab] = useState("overview");
   const [timeRange, setTimeRange] = useState("30");
+  const navigate = useNavigate();
 
   const tabs = [
     { id: "overview", label: "Overview", icon: FiTrendingUp },
@@ -35,6 +38,79 @@ const StatisticsPage = () => {
     { id: "customers", label: "Customers", icon: FiUsers },
   ];
 
+  // Check if user has access to statistics
+  const hasAccess = paymentInfo.plan && paymentInfo.plan !== 'basic';
+
+  // Upgrade prompt component for basic plan users
+  const renderUpgradePrompt = () => (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <Card className="max-w-2xl w-full text-center">
+        <div className="p-8">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full">
+              <FiStar className="h-12 w-12 text-white" />
+            </div>
+          </div>
+          
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Statistics - Pro Feature
+          </h2>
+          
+          <p className="text-lg text-gray-600 mb-6">
+            Advanced analytics and detailed insights are available with Standard and Pro plans. 
+            Upgrade your plan to unlock powerful statistics and data visualization.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="text-left p-4 bg-blue-50 rounded-lg">
+              <h3 className="font-semibold text-blue-900 mb-2">What you'll get:</h3>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Detailed rating breakdowns</li>
+                <li>• Monthly trend analysis</li>
+                <li>• Customer insights</li>
+                <li>• Advanced charts & graphs</li>
+                <li>• Export capabilities</li>
+              </ul>
+            </div>
+            
+            <div className="text-left p-4 bg-green-50 rounded-lg">
+              <h3 className="font-semibold text-green-900 mb-2">Current plan:</h3>
+              <div className="text-sm text-green-800">
+                <p className="font-medium capitalize">{paymentInfo.plan || 'Trial'}</p>
+                <p className="text-xs mt-1">
+                  {paymentInfo.trial ? 'Trial period' : 'Basic features only'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={() => navigate('/dashboard/upgrade-plan')}
+              className="flex items-center"
+              size="lg"
+            >
+              <FiArrowRight className="h-5 w-5 mr-2" />
+              Upgrade to Pro
+            </Button>
+            
+            <Button
+              onClick={() => navigate('/dashboard')}
+              variant="outline"
+              size="lg"
+            >
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  // If user doesn't have access, show upgrade prompt
+  if (!hasAccess) {
+    return renderUpgradePrompt();
+  }
 
   
   // Calculate statistics
@@ -456,7 +532,7 @@ const StatisticsPage = () => {
     }
   };
 
-  if (loading.reviews) {
+  if (loading.reviews || loading.paymentInfo) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />

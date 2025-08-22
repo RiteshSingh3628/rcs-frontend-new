@@ -1,13 +1,92 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FiArchive, FiSearch, FiFilter, FiRotateCcw, FiTrash2 } from 'react-icons/fi';
+import { FiArchive, FiSearch, FiFilter, FiRotateCcw, FiTrash2,FiStar, FiArrowRight } from 'react-icons/fi';
+import { useApp } from '../../context/AppContext';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Table from '../../components/ui/Table';
 import Modal from '../../components/ui/Modal';
+import { useNavigate } from 'react-router-dom';
 
 const ArchivePage = () => {
+  const { paymentInfo, loading } = useApp();
+  const navigate = useNavigate();
+  
+  // Check if user has access to archive
+  const hasAccess = paymentInfo.plan && paymentInfo.plan !== 'basic';
+
+  // Upgrade prompt component for basic plan users
+  const renderUpgradePrompt = () => (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <Card className="max-w-2xl w-full text-center">
+        <div className="p-8">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full">
+              <FiStar className="h-12 w-12 text-white" />
+            </div>
+          </div>
+          
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Archive - Pro Feature
+          </h2>
+          
+          <p className="text-lg text-gray-600 mb-6">
+            Advanced archiving and data management are available with Standard and Pro plans. 
+            Upgrade your plan to access powerful archiving tools and data retention features.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="text-left p-4 bg-blue-50 rounded-lg">
+              <h3 className="font-semibold text-blue-900 mb-2">What you'll get:</h3>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Archive reviews & widgets</li>
+                <li>• Advanced search & filters</li>
+                <li>• Data retention policies</li>
+                <li>• Bulk operations</li>
+                <li>• Export archived data</li>
+              </ul>
+            </div>
+            
+            <div className="text-left p-4 bg-green-50 rounded-lg">
+              <h3 className="font-semibold text-green-900 mb-2">Current plan:</h3>
+              <div className="text-sm text-green-800">
+                <p className="font-medium capitalize">{paymentInfo.plan || 'Trial'}</p>
+                <p className="text-xs mt-1">
+                  {paymentInfo.trial ? 'Trial period' : 'Basic features only'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={() => navigate('/dashboard/upgrade-plan')}
+              className="flex items-center"
+              size="lg"
+            >
+              <FiArrowRight className="h-5 w-5 mr-2" />
+              Upgrade to Pro
+            </Button>
+            
+            <Button
+              onClick={() => navigate('/dashboard')}
+              variant="outline"
+              size="lg"
+            >
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  // If user doesn't have access, show upgrade prompt
+  if (!hasAccess) {
+    return renderUpgradePrompt();
+  }
+
   const [archivedItems, setArchivedItems] = useState([
     {
       id: 1,

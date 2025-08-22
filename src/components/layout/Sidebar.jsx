@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useApp } from "../../context/AppContext";
 import {
   FiHome,
   FiSettings,
@@ -18,13 +19,26 @@ import { FaSquare } from "react-icons/fa6";
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { paymentInfo } = useApp();
 
   const menuItems = [
     { icon: FiHome, label: "Dashboard", path: "/dashboard" },
     { icon: FiSettings, label: "Widget Settings", path: "/widget-settings" },
     { icon: FiStar, label: "Reviews", path: "/reviews" },
-    { icon: FiBarChart2, label: "Statistics", path: "/statistics" },
-    // { icon: FiArchive, label: "Archive", path: "/archive" },
+    { 
+      icon: FiBarChart2, 
+      label: "Statistics", 
+      path: "/statistics",
+      pro: true, // Mark as pro feature
+      disabled: paymentInfo.plan === 'basic' // Disable for basic plan
+    },
+    { 
+      icon: FiArchive, 
+      label: "Archive", 
+      path: "/archive",
+      pro: true, // Mark as pro feature
+      disabled: paymentInfo.plan === 'basic' // Disable for basic plan
+    },
     { icon: FiUser, label: "Profile", path: "/profile" },
     { icon: FaSquare, label: "QR Code", path: "/qr-code" },
   ];
@@ -32,6 +46,18 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  const handleItemClick = (item, e) => {
+    if (item.disabled) {
+      e.preventDefault();
+      // You can show a tooltip or message here about upgrading
+      return;
+    }
+    
+    if (window.innerWidth < 1024) {
+      setIsOpen(false);
+    }
   };
 
   const sidebarVariants = {
@@ -88,26 +114,45 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
             {menuItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === "/dashboard"}
-                className={({ isActive }) =>
-                  `flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
-                    isActive
-                      ? "bg-blue-50 text-blue-700 border-r-4 border-blue-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }`
-                }
-                onClick={(e) => {
-                  if (window.innerWidth < 1024) {
-                    setIsOpen(false);
+              <div key={item.path} className="relative">
+                <NavLink
+                  to={item.disabled ? "#" : item.path}
+                  end={item.path === "/dashboard"}
+                  className={({ isActive }) =>
+                    `flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      item.disabled
+                        ? "text-gray-400 cursor-not-allowed bg-gray-50"
+                        : isActive
+                        ? "bg-blue-50 text-blue-700 border-r-4 border-blue-700"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }`
                   }
-                }}
-              >
-                <item.icon className="mr-3 h-5 w-5" />
-                {item.label}
-              </NavLink>
+                  onClick={(e) => handleItemClick(item, e)}
+                >
+                  <item.icon className={`mr-3 h-5 w-5 ${item.disabled ? 'text-gray-400' : ''}`} />
+                  <span className="flex-1">{item.label}</span>
+                  
+                  {/* Pro Label */}
+                  {item.pro && (
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-yellow-600 text-white">
+                        <FiStar className="h-3 w-3 mr-1" />
+                        Pro
+                      </span>
+                    </div>
+                  )}
+                </NavLink>
+                
+                {/* Disabled Tooltip */}
+                {item.disabled && (
+                  <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 z-50">
+                    <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      Upgrade to Standard or Pro plan to access Statistics
+                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
           </nav>
 
