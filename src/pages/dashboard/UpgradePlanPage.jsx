@@ -6,18 +6,39 @@ import { paymentAPI } from '../../api/api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import Modal from '../../components/ui/Modal';
-// import StripePaymentForm from '../../components/ui/StripePaymentForm';
-import PaymentForm from '../../components/PaymentForm';
-
+import { useStripe } from '@stripe/react-stripe-js';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const UpgradePlanPage = () => {
   const { profile } = useApp();
+  const stripe = useStripe();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [clientSecret, setClientSecret] = useState(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
+
+  // Handle Stripe redirect results and payment success
+  useEffect(() => {
+    if (stripe) {
+      const success = searchParams.get('success');
+      const canceled = searchParams.get('canceled');
+
+      if (success === 'true') {
+        handlePaymentSuccess();
+      } else if (canceled === 'true') {
+        handlePaymentCancel();
+      }
+    }
+
+    // Check for upgrade success from payment page
+    const upgradeSuccess = searchParams.get('upgrade');
+    if (upgradeSuccess === 'success') {
+      // Show success message or redirect
+      window.location.href = '/dashboard';
+    }
+  }, [stripe, searchParams]);
 
 
   const plans = [
@@ -86,11 +107,32 @@ const UpgradePlanPage = () => {
 
     try {
       console.log('selectedPlan', selectedPlan);
-      const response = await paymentAPI.upgradePlan(selectedPlan.id);
-      const { client_secret } = response.data;
       
-      setClientSecret(client_secret);
-      setShowPaymentModal(true);
+      // First try to create a Checkout Session for redirect
+      try {
+        const checkoutResponse = await paymentAPI.createCheckoutSession(selectedPlan.id);
+        const { sessionId } = checkoutResponse.data;
+        
+        if (sessionId && stripe) {
+          setRedirecting(true);
+          const { error } = await stripe.redirectToCheckout({
+            sessionId: sessionId,
+          });
+          
+          if (error) {
+            console.error('Error redirecting to Stripe:', error);
+            setRedirecting(false);
+            throw new Error('Redirect failed');
+          }
+          // Don't set loading to false here as we're redirecting
+          return; // Successfully redirected
+        }
+      } catch (checkoutError) {
+        console.log('Checkout Session creation failed, falling back to payment page:', checkoutError);
+      }
+      
+      // Fallback to payment page
+      navigate(`/dashboard/payment?plan=${selectedPlan.id}&planName=${selectedPlan.name}&planPrice=${selectedPlan.price}&planPeriod=${selectedPlan.period}`);
     } catch (error) {
       console.error('Error upgrading plan:', error);
       setPaymentError('Failed to initiate plan upgrade. Please try again.');
@@ -100,15 +142,12 @@ const UpgradePlanPage = () => {
   };
 
   const handlePaymentSuccess = () => {
-    setShowPaymentModal(false);
-    setClientSecret(null);
     // Redirect to dashboard or show success message
     window.location.href = '/dashboard';
   };
 
   const handlePaymentCancel = () => {
-    setShowPaymentModal(false);
-    setClientSecret(null);
+    // User will be redirected back from payment page
   };
 
   return (
@@ -210,14 +249,24 @@ const UpgradePlanPage = () => {
                 
                 <Button
                   onClick={handleUpgradePlan}
-                  loading={loading}
-                  disabled={loading}
+                  loading={loading || redirecting}
+                  disabled={loading || redirecting}
                   className="w-full"
                   size="lg"
                 >
                   <FiArrowRight className="h-5 w-5 mr-2" />
-                  Upgrade to {selectedPlan.name}
+                  {redirecting ? 'Redirecting to Payment...' : `Upgrade to ${selectedPlan.name}`}
                 </Button>
+                
+                {redirecting && (
+                  <div className="mt-4 text-center">
+                    <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                      <p className="text-blue-800">
+                        Redirecting you to Stripe's secure payment page...
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
           </motion.div>
@@ -236,69 +285,6 @@ const UpgradePlanPage = () => {
           </motion.div>
         )}
       </div>
-
-      {/* Payment Modal */}
-      <Modal
-        isOpen={showPaymentModal}
-        onClose={handlePaymentCancel}
-        title="Complete Your Payment"
-        size="lg"
-      >
-        <div className="p-6">
-          {clientSecret ? (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Upgrade to {selectedPlan?.name}
-                </h3>
-                <p className="text-gray-600">
-                  Complete your payment to unlock all features
-                </p>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-700">Plan:</span>
-                  <span className="font-semibold">{selectedPlan?.name}</span>
-                </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-700">Price:</span>
-                  <span className="font-semibold">${selectedPlan?.price}/{selectedPlan?.period}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Billing Cycle:</span>
-                  <span className="font-semibold">Monthly</span>
-                </div>
-              </div>
-
-              {/* Stripe Payment Form */}
-              {/* <StripePaymentForm
-                clientSecret={clientSecret}
-                plan={selectedPlan}
-                onSuccess={handlePaymentSuccess}
-                onCancel={handlePaymentCancel}
-                onError={(error) => setPaymentError(error)}
-              /> */}
-
-              
-
-              <div className="text-center">
-                <Button
-                  onClick={handlePaymentCancel}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-32">
-              <LoadingSpinner size="lg" />
-            </div>
-          )}
-        </div>
-      </Modal>
     </div>
   );
 };

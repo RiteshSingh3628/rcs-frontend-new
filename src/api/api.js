@@ -103,6 +103,7 @@ export const userAPI = {
 export const paymentAPI = {
   createPayment:null,
   upgradePlan: (plan) => api.post(`/api/payment/upgrade/`, { plan: plan }),
+  createCheckoutSession: (plan) => api.post(`/api/payment/create-checkout-session/`, { plan: plan }),
   getPaymentHistory:null,
   rePurchase:()=> api.post(`/api/payment/repurchase/`)
 }

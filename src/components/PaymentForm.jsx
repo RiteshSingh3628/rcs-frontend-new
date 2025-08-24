@@ -3,7 +3,7 @@ import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import { FiCreditCard, FiLock } from 'react-icons/fi';
 import Button from './ui/Button';
 
-function PaymentForm({ clientSecret, onSuccess, onCancel }) {
+function PaymentForm({ clientSecret, plan, onSuccess, onCancel, onError }) {
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = useState(false);
@@ -28,6 +28,9 @@ function PaymentForm({ clientSecret, onSuccess, onCancel }) {
             }
         } catch (err) {
             setError('Payment failed. Please try again.');
+            if (onError) {
+                onError('Payment failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
@@ -50,6 +53,19 @@ function PaymentForm({ clientSecret, onSuccess, onCancel }) {
 
     return (
         <div className="space-y-6">
+            {plan && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                    <div className="flex justify-between items-center">
+                        <span className="text-gray-700">Plan:</span>
+                        <span className="font-semibold">{plan.name}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                        <span className="text-gray-700">Amount:</span>
+                        <span className="font-semibold text-blue-600">${plan.price}/{plan.period}</span>
+                    </div>
+                </div>
+            )}
+            
             <div className="flex items-center justify-center mb-4">
                 <FiCreditCard className="h-6 w-6 text-blue-600 mr-2" />
                 <span className="text-lg font-semibold text-gray-900">Payment Information</span>
